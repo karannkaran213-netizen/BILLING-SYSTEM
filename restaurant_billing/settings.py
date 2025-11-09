@@ -73,15 +73,16 @@ WSGI_APPLICATION = 'restaurant_billing.wsgi.application'
 import os
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('railway'),
-        'USER': os.getenv('postgres'),
-        'PASSWORD': os.getenv('IfTHtZMRTKXdhOJfrLQeLGroFvNLKjen'),
-        'HOST': os.getenv('shortline.proxy.rlwy.net'),
-        'PORT': os.getenv('31784'),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "billing_db",
+        "USER": "postgres",
+        "PASSWORD": "123456",
+        "HOST": ".vercel.app",
+        "PORT": "5432",
     }
 }
+
 
 
 # Password validation
