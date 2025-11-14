@@ -10,9 +10,10 @@ from decimal import Decimal
 import json
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
+from io import BytesIO
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 
@@ -20,6 +21,7 @@ from .models import Menu, Order, OrderItem, Expense
 from .forms import MenuForm, ExpenseForm
 from .utils import (
     generate_qr_code_response,
+    generate_qr_code,
     calculate_daily_sales,
     calculate_monthly_sales,
     calculate_expenses,
@@ -440,11 +442,10 @@ def generate_qr(request, order_id):
 
 
 def export_bill_pdf(request, order_id):
-    """Export bill as PDF - same format as print (NO QR CODE)"""
+    """Export bill as PDF - same format as print with medium size QR code"""
     order = get_object_or_404(Order, pk=order_id)
     
     response = HttpResponse(content_type='application/pdf')
-    # Use bill1.pdf as filename if it's the first bill, otherwise use order number
     response['Content-Disposition'] = f'attachment; filename="bill1.pdf"'
     
     # Use letter size but can adapt to any size
@@ -498,7 +499,7 @@ def export_bill_pdf(request, order_id):
         f"<b>₹{order.total_amount:.2f}</b>"
     ])
     
-    # Create table - NO QR CODE included
+    # Create table
     bill_table = Table(table_data, colWidths=[3*inch, 0.8*inch, 1.2*inch, 1*inch])
     bill_table.setStyle(TableStyle([
         # Header row
@@ -539,8 +540,36 @@ def export_bill_pdf(request, order_id):
     status_text = f"Status: {order.status.upper()}"
     status_para = Paragraph(status_text, status_style)
     elements.append(status_para)
+    elements.append(Spacer(1, 0.2*inch))
     
-    # NOTE: QR CODE IS INTENTIONALLY NOT INCLUDED - Same as print format
+    # QR Code - Medium size (80mm = ~3.15 inches)
+    qr_img = generate_qr_code(order)
+    # Save QR code to BytesIO
+    qr_buffer = BytesIO()
+    qr_img.save(qr_buffer, format='PNG')
+    qr_buffer.seek(0)
+    
+    # Add QR code to PDF - medium size (3 inches = 80mm)
+    qr_title_style = styles['Normal']
+    qr_title_style.alignment = 1
+    qr_title_style.fontSize = 12
+    qr_title_style.fontName = 'Helvetica-Bold'
+    qr_title = Paragraph("QR Code", qr_title_style)
+    elements.append(qr_title)
+    elements.append(Spacer(1, 0.1*inch))
+    
+    # QR code image - medium size (3 inches = 80mm)
+    qr_image = Image(qr_buffer, width=3*inch, height=3*inch)
+    elements.append(qr_image)
+    elements.append(Spacer(1, 0.1*inch))
+    
+    # QR note
+    qr_note_style = styles['Normal']
+    qr_note_style.alignment = 1
+    qr_note_style.fontSize = 9
+    qr_note = Paragraph("Scan to view order details", qr_note_style)
+    elements.append(qr_note)
+    
     # Build PDF
     doc.build(elements)
     return response

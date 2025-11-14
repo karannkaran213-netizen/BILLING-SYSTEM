@@ -57,8 +57,38 @@
 
             /* Show print-only elements */
             .print-header,
-            .print-footer {
+            .print-footer,
+            .bill-qr-print {
                 display: block !important;
+            }
+            
+            /* QR code for printing - medium size */
+            .bill-qr-print {
+                text-align: center !important;
+                margin: 5mm auto !important;
+                padding: 3mm !important;
+                page-break-inside: avoid !important;
+            }
+            
+            .bill-qr-print h3 {
+                font-size: 10pt !important;
+                margin-bottom: 2mm !important;
+                font-weight: bold !important;
+            }
+            
+            .qr-image-print {
+                width: 80mm !important;
+                height: 80mm !important;
+                max-width: 80mm !important;
+                max-height: 80mm !important;
+                margin: 0 auto 2mm auto !important;
+                display: block !important;
+            }
+            
+            .qr-note-print {
+                font-size: 8pt !important;
+                margin: 0 !important;
+                color: #000 !important;
             }
 
             /* Thermal printer specific (58mm) */
@@ -155,9 +185,6 @@
             <!-- Print-only header -->
             <div class="print-header">
                 <h1>Restaurant Bill</h1>
-                <p>{{ request.site.name|default:"Your Restaurant Name" }}</p>
-                <p>{{ request.site.address|default:"Restaurant Address" }}</p>
-                <p>Tel: {{ request.site.phone|default:"Phone Number" }}</p>
                 <div class="dotted-separator"></div>
             </div>
             
@@ -208,10 +235,16 @@
                 <p class="qr-note">Scan to view order details</p>
             </div>
 
+            <!-- QR code for printing - medium size -->
+            <div class="bill-qr-print print-only" id="qrCodePrint">
+                <h3>QR Code</h3>
+                <img src="{% url 'generate_qr' order.id %}" alt="QR Code" class="qr-image-print">
+                <p class="qr-note-print">Scan to view order details</p>
+            </div>
+
             <!-- Print-only footer -->
             <div class="print-footer">
                 <p>Thank you for your business!</p>
-                <p>{{ request.site.footer_text|default:"Have a great day!" }}</p>
             </div>
         </div>
         
