@@ -250,7 +250,7 @@
         
         <div class="bill-actions screen-only">
             {% if order.status != 'paid' %}
-            <button class="btn btn-success btn-lg" onclick="payNow({{ order.id }})">Pay Now</button>
+            <button class="btn btn-success btn-lg" onclick="payNow('{{ order.id }}')">Pay Now</button>
             {% endif %}
             <button class="btn btn-primary btn-lg" onclick="printBill()">Print Bill</button>
             <a href="{% url 'export_bill_pdf' order.id %}" class="btn btn-danger btn-lg" target="_blank">Download PDF</a>
